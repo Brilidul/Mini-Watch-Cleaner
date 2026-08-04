@@ -24,12 +24,8 @@ For the 3d model files and instructions: https://makerworld.com/en/models/120070
 As i am working on the machine, the 3d files aren't ready
 
 ### Electronics
-I used an Arduino micro with an ATMEGA32u4
-
-my servo : https://fr.rs-online.com/web/p/servomoteurs/7813046
-
-I added a switch : https://fr.rs-online.com/web/p/interrupteurs-a-bascule/7932563
-
-The screen I used : fr.aliexpress.com/item/1005011562228142.html
-
-the micro-usb connector to power the machine : https://fr.aliexpress.com/item/1005012122984152.html
+- I used an Arduino micro with an ATMEGA32u4
+- my servo : https://fr.rs-online.com/web/p/servomoteurs/7813046
+- I added a switch : https://fr.rs-online.com/web/p/interrupteurs-a-bascule/7932563
+- The screen I used : fr.aliexpress.com/item/1005011562228142.html
+- the micro-usb connector to power the machine : https://fr.aliexpress.com/item/1005012122984152.html
