@@ -32,7 +32,6 @@ DIYables_4Digit7Segment_74HC595 display(SCLK, RCLK, DIO);
 #define SLOW_SPEED_SERVO 2
 
 
-
 enum class MODES {
   STOP,
   CLEANING,
@@ -119,7 +118,7 @@ void callbackButtonB(char c){
      *  ---  .     4    0
      * 
      */
-/**
+  /**
  *   
  * B11000000,  // 0
   B11111001,  // 1
@@ -136,8 +135,10 @@ void callbackButtonB(char c){
   B11000110,  // C
   B10000110,  // E
   B10001110,  // F
+  B11000111,  // L
+  B11000111,  // A/R
   B10011100   // ° (degree)
-
+  
   I have modified the 4 digit 7 segment code to allow for raw input, like this:
       void setRaw(int pos, byte value);
 
@@ -165,7 +166,7 @@ void showModeAtPos(MODES mode,int pos){
     break;
   case MODES::RINSING:
     //display.setChar(pos, SegChars::DEGREE);
-    display.setRaw(pos, B10001000); // R
+    display.setRaw(pos, B10001000); // A/R ?
     break;
   case MODES::SLOW_CLEANING:
     //selectmode = MODES::CLEANING;
@@ -201,28 +202,6 @@ void updateDisp(){
   display.show();                       // show on the display */
 
 }
-// the setup function runs once when you press reset or power the board
-void setup() {
-  // initialize digital pin LED_BUILTIN as an output.
-  pinMode(LED_BUILTIN, OUTPUT);
-  //pinMode(BUTTON_A, INPUT_PULLUP);
-  //pinMode(BUTTON_B, INPUT_PULLUP);
-  buttonA = new Button(BUTTON_A);
-  buttonB = new Button(BUTTON_B);
-  buttonA->init();
-  buttonB->init();
-  buttonA->setSelectorCharCallback('a',&callbackButtonA);
-  buttonB->setSelectorCharCallback('b',&callbackButtonB);
-
-
-
-  myservo.attach(PIN_SERVO);  // attaches the servo on pin 9 to the Servo object
-
-
-    myservo.write(90);
-    lastupdate = millis();
-}
-
 void smartDelay(long time){
 
 }
@@ -254,12 +233,47 @@ void updateCleaningProgram(int secperpart,int speed){
 
 }
 
+// the setup function runs once when you press reset or power the board
+void setup() {
+  // initialize digital pin LED_BUILTIN as an output.
+  pinMode(LED_BUILTIN, OUTPUT);
+  //pinMode(BUTTON_A, INPUT_PULLUP);
+  //pinMode(BUTTON_B, INPUT_PULLUP);
+  buttonA = new Button(BUTTON_A);
+  buttonB = new Button(BUTTON_B);
+  buttonA->init();
+  buttonB->init();
+  buttonA->setSelectorCharCallback('a',&callbackButtonA);
+  buttonB->setSelectorCharCallback('b',&callbackButtonB);
+
+
+
+  myservo.attach(PIN_SERVO);  // attaches the servo on pin 9 to the Servo object
+
+
+
+    myservo.write(90);
+    lastupdate = millis();
+
+  testServo(); // retirer après vérification
+}
 // the loop function runs over and over again forever
 void loop() {
 
 
   buttonA->update();
   buttonB->update();
+
+  // Manual control: when in STOP mode, hold Button A or B to rotate
+  if (activemode == MODES::STOP) {
+    if (buttonA->isPressed()) {
+      myservo.write(90 - MANUAL_SPEED_SERVO); // rotate one direction
+    } else if (buttonB->isPressed()) {
+      myservo.write(90 + MANUAL_SPEED_SERVO); // rotate other direction
+    } else {
+      myservo.write(90); // stop
+    }
+  }
 
   long now = millis();
   if (now - lastupdate>1000 || (lastupdate>now && (lastupdate- now > 1000))){
