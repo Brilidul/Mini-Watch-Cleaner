@@ -25,12 +25,17 @@
 
 DIYables_4Digit7Segment_74HC595 display(SCLK, RCLK, DIO);
 
-#define PIN_SERVO 5
+#define PIN_SERVO 16  //D16
 
 #define BUTTON_A A0
 #define BUTTON_B A1
 #define SLOW_SPEED_SERVO 2
 
+
+// Valeur pour piloter le servo continu en manuel ONLY FOR TESTS
+#define MANUAL_SPEED_SERVO 30
+// Valeur d'arrêt (ajuste si besoin)
+#define MANUAL_STOP_SERVO 90
 
 enum class MODES {
   STOP,
@@ -52,7 +57,7 @@ Servo myservo;  // create Servo object to control a servo
 void rotateServo(int speed,boolean clockwise);
 
 void stopServo(){
-  myservo.write(90);
+  myservo.write(95); // stop the servo
 }
 void startMode(MODES newMode){
   activemode = newMode;
@@ -233,6 +238,38 @@ void updateCleaningProgram(int secperpart,int speed){
 
 }
 
+///////////////////////////////////////////////////////
+/////////// This section is Brilidul's code ///////////
+///////////////////////////////////////////////////////
+
+// Simple test: back-and-forth sweep of the servo (0..180..0)
+void testServo2() {
+  myservo.write(85);
+  digitalWrite(LED_BUILTIN, true);
+  delay(1000);
+  digitalWrite(LED_BUILTIN, false);
+  delay(100); 
+
+  myservo.write(95);
+  digitalWrite(LED_BUILTIN, true);
+  delay(1000);
+  digitalWrite(LED_BUILTIN, false);
+  delay(100);
+
+  myservo.write(100);
+  digitalWrite(LED_BUILTIN, true);
+  delay(1000);
+  digitalWrite(LED_BUILTIN, false);
+  
+  stopServo();
+  delay(500);
+}
+
+//////////////////////////////////////
+/////////// End of Section ///////////
+//////////////////////////////////////
+
+
 // the setup function runs once when you press reset or power the board
 void setup() {
   // initialize digital pin LED_BUILTIN as an output.
@@ -250,29 +287,27 @@ void setup() {
 
   myservo.attach(PIN_SERVO);  // attaches the servo on pin 9 to the Servo object
 
+  stopServo();
+  lastupdate = millis();
 
-
-    myservo.write(90);
-    lastupdate = millis();
-
-  testServo(); // retirer après vérification
+  testServo2(); // retirer après vérification
+  stopServo();
 }
 // the loop function runs over and over again forever
 void loop() {
 
-
   buttonA->update();
   buttonB->update();
-
-  // Manual control: when in STOP mode, hold Button A or B to rotate
-  if (activemode == MODES::STOP) {
-    if (buttonA->isPressed()) {
-      myservo.write(90 - MANUAL_SPEED_SERVO); // rotate one direction
-    } else if (buttonB->isPressed()) {
-      myservo.write(90 + MANUAL_SPEED_SERVO); // rotate other direction
-    } else {
-      myservo.write(90); // stop
-    }
+  /*
+  digitalWrite(LED_BUILTIN, (buttonA->isPressed() || buttonB->isPressed()) ? HIGH : LOW);
+  if (buttonA->isPressed()) {
+    myservo.write(0 - MANUAL_SPEED_SERVO); // rotation dans un sens
+  } else if (buttonB->isPressed()) {
+    myservo.write(0 + MANUAL_SPEED_SERVO); // rotation dans l'autre sens
+  } 
+  else 
+  {
+    stopServo();       // arrêt
   }
 
   long now = millis();
@@ -295,12 +330,10 @@ void loop() {
     }
   }
  
-  
-
   updateDisp();
 
   display.loop(); // MUST call the display.loop() function in loop()
-
+*/
 
 
 }
