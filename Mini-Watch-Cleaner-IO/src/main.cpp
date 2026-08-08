@@ -23,16 +23,20 @@
 
 #include <DIYables_4Digit7Segment_74HC595.h> // DIYables_4Digit7Segment_74HC595 library
 
+// Pin definitions for the 4 digit 7 segment display
 #define SCLK  8  // The Arduino pin connected to SCLK
 #define RCLK  7  // The Arduino pin connected to RCLK
 #define DIO   6  // The Arduino pin connected to DIO
-
 DIYables_4Digit7Segment_74HC595 display(SCLK, RCLK, DIO);
 
-#define PIN_SERVO 16  //D16
-
+// Pin definitions for the buttons
 #define BUTTON_A A0
 #define BUTTON_B A1
+
+// Pin definition for the servo
+#define PIN_SERVO 16  //D16
+
+// Servo speeds definitions
 #define NORMAL_SPEED_SERVO 10
 #define SLOW_SPEED_SERVO 2
 // stop value for the servo
@@ -53,10 +57,10 @@ enum class MODES {
 
 MODES activemode = MODES::STOP;
 MODES selectmode = MODES::CLEANING;
-long lastupdate=0;
-int timer = 0;
-boolean rotateClockwise = true;
-int debouncetimer = 0;
+unsigned long ulLastUpdate=0;
+int iTimer = 0;
+boolean bRotateClockwise = true;
+int iDebounceTimer = 0;
 Button * buttonA;
 Button * buttonB;
 Servo myservo;  // create Servo object to control a servo
@@ -77,19 +81,19 @@ void startMode(MODES newMode){
       stopServo();
       break;
     case MODES::CLEANING:
-      timer = 300;
-      rotateClockwise = true;
-      rotateServo(90,rotateClockwise);
+      iTimer = 300;
+      bRotateClockwise = true;
+      rotateServo(90,bRotateClockwise);
       break;
     case MODES::RINSING:
-      timer = 180;
-      rotateClockwise = true;
-      rotateServo(90,rotateClockwise);
+      iTimer = 180;
+      bRotateClockwise = true;
+      rotateServo(90,bRotateClockwise);
       break;
     case MODES::SLOW_CLEANING:
-      timer = 300;
-      rotateClockwise = true;
-      rotateServo(SLOW_SPEED_SERVO,rotateClockwise);
+      iTimer = 300;
+      bRotateClockwise = true;
+      rotateServo(SLOW_SPEED_SERVO,bRotateClockwise);
       break;
     default:
       break;
@@ -103,6 +107,7 @@ void callbackButtonA(char c){
 
 // When B button is pressed, stops an active mode, or cycles through the available modes when the cleaner is already stopped.
 void callbackButtonB(char c){
+  //Stops if active
   if (activemode!=MODES::STOP){
    startMode(MODES::STOP);
    selectmode = MODES::CLEANING;
@@ -180,7 +185,6 @@ void showModeAtPos(MODES mode,int pos){
     break;
   case MODES::CLEANING:
     display.setChar(pos, SegChars::C);
-
     break;
   case MODES::RINSING:
     //display.setChar(pos, SegChars::DEGREE);
@@ -205,13 +209,13 @@ void updateDisp(){
     showModeAtPos(selectmode,2);
     break;
   case MODES::CLEANING:
-    display.printInt(timer, false);
+    display.printInt(iTimer, false);
     break;
   case MODES::SLOW_CLEANING:
-    display.printInt(timer, false);
+    display.printInt(iTimer, false);
   break;
   case MODES::RINSING:
-    display.printInt(timer, false);
+    display.printInt(iTimer, false);
   break;
   
   default:
@@ -243,17 +247,17 @@ void rotateServo(int speed,boolean clockwise){
 // Decrements the mode timer and reverses the servo after each configured number of seconds.
 //Run every 1 sec
 void updateCleaningProgram(int secperpart,int speed){
-  timer--;
+  iTimer--;
 
-  if (timer<=0) {
+  if (iTimer<=0) {
     startMode(MODES::STOP);
     
     return;
   }
 
-  if (timer%secperpart==0){
-    rotateClockwise = !rotateClockwise;
-    rotateServo(speed,rotateClockwise);
+  if (iTimer%secperpart==0){
+    bRotateClockwise = !bRotateClockwise;
+    rotateServo(speed,bRotateClockwise);
   }
 
 }
@@ -262,7 +266,7 @@ void updateCleaningProgram(int secperpart,int speed){
 /////////// This section is Brilidul's code ///////////
 ///////////////////////////////////////////////////////
 
-// Simple test: back-and-forth sweep of the servo (0..180..0)
+// Simple test: back-and-forth 
 void testServo2() {
   myservo.write(SERVO_STOP_VALUE-SLOW_SPEED_SERVO);
   digitalWrite(LED_BUILTIN, true);
@@ -295,6 +299,8 @@ void testServo2() {
 void setup() {
   // initialize digital pin LED_BUILTIN as an output.
   pinMode(LED_BUILTIN, OUTPUT);
+
+  // initialize the buttons
   //pinMode(BUTTON_A, INPUT_PULLUP);
   //pinMode(BUTTON_B, INPUT_PULLUP);
   buttonA = new Button(BUTTON_A);
@@ -309,7 +315,7 @@ void setup() {
   myservo.attach(PIN_SERVO);  // attaches the servo on pin 9 to the Servo object
 
   stopServo();
-  lastupdate = millis();
+  ulLastUpdate = millis();
 
   testServo2(); // retirer après vérification
   stopServo();
@@ -321,8 +327,9 @@ void loop() {
 
   buttonA->update();
   buttonB->update();
-  /*
+ 
   digitalWrite(LED_BUILTIN, (buttonA->isPressed() || buttonB->isPressed()) ? HIGH : LOW);
+
   if (buttonA->isPressed()) {
     myservo.write(0 - MANUAL_SPEED_SERVO); // rotation dans un sens
   } else if (buttonB->isPressed()) {
@@ -333,9 +340,9 @@ void loop() {
     stopServo();       // arrêt
   }
 
-  long now = millis();
-  if (now - lastupdate>1000 || (lastupdate>now && (lastupdate- now > 1000))){
-    lastupdate = now;
+  unsigned long ulNow = millis();
+  if (ulNow - ulLastUpdate>1000 || (ulLastUpdate>ulNow && (ulLastUpdate- ulNow > 1000))){
+    ulLastUpdate = ulNow;
     //every 1 sec
     switch (activemode)
     {
