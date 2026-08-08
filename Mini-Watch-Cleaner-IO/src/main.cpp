@@ -57,10 +57,10 @@ enum class MODES {
 
 MODES activemode = MODES::STOP;
 MODES selectmode = MODES::CLEANING;
-unsigned long ulLastUpdate=0;
-int iTimer = 0;
-boolean bRotateClockwise = true;
-int iDebounceTimer = 0;
+unsigned long ul_LastUpdate=0;
+int i_Timer = 0;
+boolean b_RotateClockwise = true;
+int i_DebounceTimer = 0;
 Button * buttonA;
 Button * buttonB;
 Servo myservo;  // create Servo object to control a servo
@@ -72,28 +72,28 @@ void stopServo(){
   myservo.write(SERVO_STOP_VALUE); // stop the servo
 }
 
-// Activates a cleaning mode, initializes its countdown and starts the servo at the mode's defined speed.
+// Activates a mode, initializes its countdown and starts the servo at the mode's defined speed.
 void startMode(MODES newMode){
   activemode = newMode;
   switch (activemode)
     {
-    case MODES::STOP:
+    case MODES::STOP: // stops the servo
       stopServo();
       break;
     case MODES::CLEANING:
-      iTimer = 300;
-      bRotateClockwise = true;
-      rotateServo(90,bRotateClockwise);
+      i_Timer = 300;
+      b_RotateClockwise = true;
+      rotateServo(NORMAL_SPEED_SERVO,b_RotateClockwise);
       break;
     case MODES::RINSING:
-      iTimer = 180;
-      bRotateClockwise = true;
-      rotateServo(90,bRotateClockwise);
+      i_Timer = 180;
+      b_RotateClockwise = true;
+      rotateServo(NORMAL_SPEED_SERVO,b_RotateClockwise);
       break;
     case MODES::SLOW_CLEANING:
-      iTimer = 300;
-      bRotateClockwise = true;
-      rotateServo(SLOW_SPEED_SERVO,bRotateClockwise);
+      i_Timer = 300;
+      b_RotateClockwise = true;
+      rotateServo(SLOW_SPEED_SERVO,b_RotateClockwise);
       break;
     default:
       break;
@@ -209,13 +209,13 @@ void updateDisp(){
     showModeAtPos(selectmode,2);
     break;
   case MODES::CLEANING:
-    display.printInt(iTimer, false);
+    display.printInt(i_Timer, false);
     break;
   case MODES::SLOW_CLEANING:
-    display.printInt(iTimer, false);
+    display.printInt(i_Timer, false);
   break;
   case MODES::RINSING:
-    display.printInt(iTimer, false);
+    display.printInt(i_Timer, false);
   break;
   
   default:
@@ -229,35 +229,36 @@ void updateDisp(){
 
 // Placeholder for a non-blocking delay implementation; currently it does nothing.
 // I didn't delete this as i don't know if christoferjh will update this code and use it in the future.
+/*
 void smartDelay(long time){
 
 }
+*/
+
 
 // Sets the servo speed and direction; values below or above the neutral command control opposite directions.
 void rotateServo(int speed,boolean clockwise){
   if (clockwise){
-    myservo.write(90-speed);
-
-  }
-  else{
-    myservo.write(90+speed);
+    myservo.write(SERVO_STOP_VALUE-speed);
+  }else{
+    myservo.write(SERVO_STOP_VALUE+speed);
   }
 }
 
 // Decrements the mode timer and reverses the servo after each configured number of seconds.
 //Run every 1 sec
 void updateCleaningProgram(int secperpart,int speed){
-  iTimer--;
+  i_Timer--;
 
-  if (iTimer<=0) {
+  if (i_Timer<=0) {
     startMode(MODES::STOP);
     
     return;
   }
 
-  if (iTimer%secperpart==0){
-    bRotateClockwise = !bRotateClockwise;
-    rotateServo(speed,bRotateClockwise);
+  if (i_Timer%secperpart==0){
+    b_RotateClockwise = !b_RotateClockwise;
+    rotateServo(speed,b_RotateClockwise);
   }
 
 }
@@ -315,7 +316,7 @@ void setup() {
   myservo.attach(PIN_SERVO);  // attaches the servo on pin 9 to the Servo object
 
   stopServo();
-  ulLastUpdate = millis();
+  ul_LastUpdate = millis();
 
   testServo2(); // retirer après vérification
   stopServo();
@@ -331,29 +332,30 @@ void loop() {
   digitalWrite(LED_BUILTIN, (buttonA->isPressed() || buttonB->isPressed()) ? HIGH : LOW);
 
   if (buttonA->isPressed()) {
-    myservo.write(0 - MANUAL_SPEED_SERVO); // rotation dans un sens
+    myservo.write(SERVO_STOP_VALUE - MANUAL_SPEED_SERVO); // rotation dans un sens
   } else if (buttonB->isPressed()) {
-    myservo.write(0 + MANUAL_SPEED_SERVO); // rotation dans l'autre sens
+    myservo.write(SERVO_STOP_VALUE + MANUAL_SPEED_SERVO); // rotation dans l'autre sens
   } 
   else 
   {
     stopServo();       // arrêt
   }
-
-  unsigned long ulNow = millis();
-  if (ulNow - ulLastUpdate>=1000){
-    ulLastUpdate = ulNow;
+  
+/*
+  unsigned long ul_Now = millis();
+  if (ul_Now - ul_LastUpdate>=1000){ //check to see if ul_lastUpdate is more than 1000 msec ago
+    ul_LastUpdate = ul_Now;
     //every 1 sec
     switch (activemode)
     {
     case MODES::CLEANING:
-      updateCleaningProgram(5,90);
+      updateCleaningProgram(5,NORMAL_SPEED_SERVO);
       break;
     case MODES::SLOW_CLEANING:
       updateCleaningProgram(5,SLOW_SPEED_SERVO);
       break;
     case MODES::RINSING:
-      updateCleaningProgram(500,90);
+      updateCleaningProgram(500,NORMAL_SPEED_SERVO);
       break;
     default:
       break;
