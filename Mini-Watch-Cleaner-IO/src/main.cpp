@@ -35,7 +35,7 @@ DIYables_4Digit7Segment_74HC595 display(SCLK, RCLK, DIO);
 // Valeur pour piloter le servo continu en manuel ONLY FOR TESTS
 #define MANUAL_SPEED_SERVO 30
 // Valeur d'arrêt (ajuste si besoin)
-#define MANUAL_STOP_SERVO 90
+#define MANUAL_STOP_SERVO 95
 
 enum class MODES {
   STOP,
@@ -57,7 +57,7 @@ Servo myservo;  // create Servo object to control a servo
 void rotateServo(int speed,boolean clockwise);
 
 void stopServo(){
-  myservo.write(95); // stop the servo
+  myservo.write(MANUAL_STOP_SERVO); // stop the servo
 }
 void startMode(MODES newMode){
   activemode = newMode;
@@ -244,19 +244,19 @@ void updateCleaningProgram(int secperpart,int speed){
 
 // Simple test: back-and-forth sweep of the servo (0..180..0)
 void testServo2() {
-  myservo.write(85);
+  myservo.write(MANUAL_STOP_SERVO-SLOW_SPEED_SERVO);
   digitalWrite(LED_BUILTIN, true);
   delay(1000);
   digitalWrite(LED_BUILTIN, false);
   delay(100); 
 
-  myservo.write(95);
+  myservo.write(MANUAL_STOP_SERVO);
   digitalWrite(LED_BUILTIN, true);
   delay(1000);
   digitalWrite(LED_BUILTIN, false);
   delay(100);
 
-  myservo.write(100);
+  myservo.write(MANUAL_STOP_SERVO+MANUAL_SPEED_SERVO);
   digitalWrite(LED_BUILTIN, true);
   delay(1000);
   digitalWrite(LED_BUILTIN, false);
