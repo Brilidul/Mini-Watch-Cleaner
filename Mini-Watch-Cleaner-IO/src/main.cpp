@@ -1,4 +1,6 @@
 /**
+ * From christoferjh :
+ * 
  * Mini Watch Cleaner
  * Using A continous rotation servo and some 3d printing.
  * Running on an Arduino Pro Mini.
@@ -9,7 +11,9 @@
  * I'm uploading it on the chance that someone perhaps will find it usefull as a starting point.
  * 
  * 
- * 
+ * From Brilidul:
+ * I adapted this code for my servo and arduino model. 
+ * Maybe some features will be added in the future, but for now it is a wip. (maybe adding an LCD screen ?)
  */
 
 #include <Arduino.h>
@@ -29,19 +33,22 @@ DIYables_4Digit7Segment_74HC595 display(SCLK, RCLK, DIO);
 
 #define BUTTON_A A0
 #define BUTTON_B A1
+#define NORMAL_SPEED_SERVO 10
 #define SLOW_SPEED_SERVO 2
-
+// stop value for the servo
+#define SERVO_STOP_VALUE 95
 
 // Valeur pour piloter le servo continu en manuel ONLY FOR TESTS
 #define MANUAL_SPEED_SERVO 30
-// Valeur d'arrêt (ajuste si besoin)
-#define MANUAL_STOP_SERVO 95
+
+
 
 enum class MODES {
   STOP,
   CLEANING,
   RINSING,
   SLOW_CLEANING
+  // SPINNING/WHIRLING ? maybe in the future.
 };
 
 MODES activemode = MODES::STOP;
@@ -56,9 +63,12 @@ Servo myservo;  // create Servo object to control a servo
 
 void rotateServo(int speed,boolean clockwise);
 
+// easy to remember function to stop the servo.
 void stopServo(){
-  myservo.write(MANUAL_STOP_SERVO); // stop the servo
+  myservo.write(SERVO_STOP_VALUE); // stop the servo
 }
+
+// Activates a cleaning mode, initializes its countdown and starts the servo at the mode's defined speed.
 void startMode(MODES newMode){
   activemode = newMode;
   switch (activemode)
@@ -86,10 +96,12 @@ void startMode(MODES newMode){
     }
 }
 
+// When A button is pressed, starts the mode currently selected.
 void callbackButtonA(char c){
   startMode(selectmode);
 }
 
+// When B button is pressed, stops an active mode, or cycles through the available modes when the cleaner is already stopped.
 void callbackButtonB(char c){
   if (activemode!=MODES::STOP){
    startMode(MODES::STOP);
@@ -159,6 +171,7 @@ void callbackButtonB(char c){
 
  */
 
+// Displays the symbol representing a mode at the requested digit position.
 void showModeAtPos(MODES mode,int pos){
   switch (mode)
   {
@@ -181,6 +194,8 @@ void showModeAtPos(MODES mode,int pos){
     break;
   }
 }
+
+// Refreshes the display with the selected mode or the remaining time for the active mode.
 void updateDisp(){
 
   display.clear();
@@ -207,20 +222,25 @@ void updateDisp(){
   display.show();                       // show on the display */
 
 }
+
+// Placeholder for a non-blocking delay implementation; currently it does nothing.
+// I didn't delete this as i don't know if christoferjh will update this code and use it in the future.
 void smartDelay(long time){
 
 }
-/**
- * Speed [1-90]
- */
+
+// Sets the servo speed and direction; values below or above the neutral command control opposite directions.
 void rotateServo(int speed,boolean clockwise){
   if (clockwise){
     myservo.write(90-speed);
 
-  }else{
+  }
+  else{
     myservo.write(90+speed);
   }
 }
+
+// Decrements the mode timer and reverses the servo after each configured number of seconds.
 //Run every 1 sec
 void updateCleaningProgram(int secperpart,int speed){
   timer--;
@@ -244,19 +264,19 @@ void updateCleaningProgram(int secperpart,int speed){
 
 // Simple test: back-and-forth sweep of the servo (0..180..0)
 void testServo2() {
-  myservo.write(MANUAL_STOP_SERVO-SLOW_SPEED_SERVO);
+  myservo.write(SERVO_STOP_VALUE-SLOW_SPEED_SERVO);
   digitalWrite(LED_BUILTIN, true);
   delay(1000);
   digitalWrite(LED_BUILTIN, false);
   delay(100); 
 
-  myservo.write(MANUAL_STOP_SERVO);
+  myservo.write(SERVO_STOP_VALUE);
   digitalWrite(LED_BUILTIN, true);
   delay(1000);
   digitalWrite(LED_BUILTIN, false);
   delay(100);
 
-  myservo.write(MANUAL_STOP_SERVO+MANUAL_SPEED_SERVO);
+  myservo.write(SERVO_STOP_VALUE+MANUAL_SPEED_SERVO);
   digitalWrite(LED_BUILTIN, true);
   delay(1000);
   digitalWrite(LED_BUILTIN, false);
@@ -271,6 +291,7 @@ void testServo2() {
 
 
 // the setup function runs once when you press reset or power the board
+// It configure the hardware, register button callbacks, and test the servo.
 void setup() {
   // initialize digital pin LED_BUILTIN as an output.
   pinMode(LED_BUILTIN, OUTPUT);
@@ -293,7 +314,9 @@ void setup() {
   testServo2(); // retirer après vérification
   stopServo();
 }
-// the loop function runs over and over again forever
+
+
+// Runs continuously to poll both buttons;
 void loop() {
 
   buttonA->update();
@@ -334,6 +357,4 @@ void loop() {
 
   display.loop(); // MUST call the display.loop() function in loop()
 */
-
-
 }
