@@ -341,7 +341,7 @@ void loop() {
   }
 
   unsigned long ulNow = millis();
-  if (ulNow - ulLastUpdate>1000 || (ulLastUpdate>ulNow && (ulLastUpdate- ulNow > 1000))){
+  if (ulNow - ulLastUpdate>=1000){
     ulLastUpdate = ulNow;
     //every 1 sec
     switch (activemode)
