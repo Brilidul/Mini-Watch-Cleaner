@@ -158,7 +158,8 @@ void callbackButtonB(char c){
   B10000110,  // E
   B10001110,  // F
   B11000111,  // L
-  B11000111,  // A/R
+  B11000111,  // A
+  B11001110,  // R
   B10011100   // ° (degree)
   
   I have modified the 4 digit 7 segment code to allow for raw input, like this:
@@ -188,7 +189,7 @@ void showModeAtPos(MODES mode,int pos){
     break;
   case MODES::RINSING:
     //display.setChar(pos, SegChars::DEGREE);
-    display.setRaw(pos, B10001000); // A/R ?
+    display.setRaw(pos, B11001110); // R 
     break;
   case MODES::SLOW_CLEANING:
     //selectmode = MODES::CLEANING;
@@ -263,38 +264,6 @@ void updateCleaningProgram(int secperpart,int speed){
 
 }
 
-///////////////////////////////////////////////////////
-/////////// This section is Brilidul's code ///////////
-///////////////////////////////////////////////////////
-
-// Simple test: back-and-forth 
-void testServo2() {
-  myservo.write(SERVO_STOP_VALUE-SLOW_SPEED_SERVO);
-  digitalWrite(LED_BUILTIN, true);
-  delay(1000);
-  digitalWrite(LED_BUILTIN, false);
-  delay(100); 
-
-  myservo.write(SERVO_STOP_VALUE);
-  digitalWrite(LED_BUILTIN, true);
-  delay(1000);
-  digitalWrite(LED_BUILTIN, false);
-  delay(100);
-
-  myservo.write(SERVO_STOP_VALUE-NORMAL_SPEED_SERVO);
-  digitalWrite(LED_BUILTIN, true);
-  delay(1000);
-  digitalWrite(LED_BUILTIN, false);
-  
-  stopServo();
-  delay(500);
-}
-
-//////////////////////////////////////
-/////////// End of Section ///////////
-//////////////////////////////////////
-
-
 // the setup function runs once when you press reset or power the board
 // It configure the hardware, register button callbacks, and test the servo.
 void setup() {
@@ -311,17 +280,11 @@ void setup() {
   buttonA->setSelectorCharCallback('a',&callbackButtonA);
   buttonB->setSelectorCharCallback('b',&callbackButtonB);
 
-
-
   myservo.attach(PIN_SERVO);  // attaches the servo on pin 9 to the Servo object
 
   stopServo();
   ul_LastUpdate = millis();
-
-  testServo2(); // retirer après vérification
-  stopServo();
 }
-
 
 // Runs continuously to poll both buttons;
 void loop() {
@@ -329,19 +292,6 @@ void loop() {
   buttonA->update();
   buttonB->update();
  
-  digitalWrite(LED_BUILTIN, (buttonA->isPressed() || buttonB->isPressed()) ? HIGH : LOW);
-
-  if (buttonA->isPressed()) {
-    myservo.write(SERVO_STOP_VALUE - MANUAL_SPEED_SERVO); // rotation dans un sens
-  } else if (buttonB->isPressed()) {
-    myservo.write(SERVO_STOP_VALUE + MANUAL_SPEED_SERVO); // rotation dans l'autre sens
-  } 
-  else 
-  {
-    stopServo();       // arrêt
-  }
- 
-/*
   unsigned long ul_Now = millis();
   if (ul_Now - ul_LastUpdate>=1000){ //check to see if ul_lastUpdate is more than 1000 msec ago
     ul_LastUpdate = ul_Now;
@@ -361,9 +311,6 @@ void loop() {
       break;
     }
   }
- 
-  updateDisp();
-
+   updateDisp();
   display.loop(); // MUST call the display.loop() function in loop()
-*/
 }
