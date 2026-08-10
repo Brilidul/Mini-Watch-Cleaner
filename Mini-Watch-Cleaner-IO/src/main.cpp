@@ -38,7 +38,7 @@ DIYables_4Digit7Segment_74HC595 display(SCLK, RCLK, DIO);
 
 // Servo speeds definitions
 #define NORMAL_SPEED_SERVO 10
-#define SLOW_SPEED_SERVO 2
+#define SLOW_SPEED_SERVO 5
 // stop value for the servo
 #define SERVO_STOP_VALUE 95
 
@@ -281,7 +281,7 @@ void testServo2() {
   digitalWrite(LED_BUILTIN, false);
   delay(100);
 
-  myservo.write(SERVO_STOP_VALUE+MANUAL_SPEED_SERVO);
+  myservo.write(SERVO_STOP_VALUE-NORMAL_SPEED_SERVO);
   digitalWrite(LED_BUILTIN, true);
   delay(1000);
   digitalWrite(LED_BUILTIN, false);
@@ -340,7 +340,7 @@ void loop() {
   {
     stopServo();       // arrêt
   }
-  
+ 
 /*
   unsigned long ul_Now = millis();
   if (ul_Now - ul_LastUpdate>=1000){ //check to see if ul_lastUpdate is more than 1000 msec ago
